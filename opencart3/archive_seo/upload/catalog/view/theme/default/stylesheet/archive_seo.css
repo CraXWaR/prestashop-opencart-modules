@@ -1,0 +1,174 @@
+/* ============================================================
+   Layout & block
+   ============================================================ */
+.archive-seo-related {
+	clear: both;
+}
+
+.archive-seo-related .module-title {
+	text-align: center;
+	color: #000;
+}
+
+.archive-seo-related .row {
+	display: flex;
+	flex-wrap: wrap;
+	margin: 0 -8px;
+}
+
+.archive-seo-related .row > [class*="col-"] {
+	display: flex;
+	padding: 0 8px;
+}
+
+.archive-seo-related .product-layout,
+.archive-seo-related .product-thumb {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+}
+
+.archive-seo-related .product-thumb .caption {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+}
+
+.archive-seo-related .product-thumb .buttons-wrapper {
+	margin-top: auto;
+}
+
+.archive-seo-related .product-thumb {
+	border-style: none;
+}
+
+.archive-seo-related .product-thumb:hover {
+	box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.2);
+}
+
+.archive-seo-related .caption .name {
+	order: initial;
+    display: flex;
+    width: auto;
+    margin-left: auto;
+    margin-right: auto;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 10px;
+    padding-bottom: 15px;
+}
+
+.archive-seo-related .caption .name > a {
+	white-space: normal;
+    overflow: visible;
+    text-overflow: initial;
+    font-family: 'Roboto';
+    font-weight: 400;
+    color: rgba(56, 56, 56, 1);
+    text-align: center;
+}
+
+/* ============================================================
+   Price
+   ============================================================ */
+.archive-seo-related .caption .price {
+	text-align: center;
+}
+
+.archive-seo-related .caption .price .price-new,
+.archive-seo-related .caption .price .price-normal {
+	    font-size: 14px;
+		color: rgba(221, 14, 28, 1);
+		margin: 0 0 0 7px;
+		order: 2;
+}
+
+.archive-seo-related .caption .price .price-old {
+	font-size: 13px;
+    color: rgba(0, 0, 0, 1);
+    text-decoration: line-through;
+    margin: 0;
+    order: 1;
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.archive-seo-related .btn-text {
+	display: none !important;
+}
+
+.archive-seo-related .button-group {
+	display: flex !important;
+	flex-wrap: nowrap;
+	justify-content: center;
+	align-items: center;
+	gap: 6px;
+	width: auto;
+}
+
+.archive-seo-related .cart-group,
+.archive-seo-related .wish-group {
+	display: flex !important;
+	flex-direction: row;
+	gap: 6px;
+	margin: 0;
+	width: auto;
+}
+
+.archive-seo-related .button-group .btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 39px;
+	height: 39px;
+	padding: 0;
+}
+
+.archive-seo-related .button-group .btn::before {
+	margin-right: 0 !important;
+}
+
+.product-info .product-details .buttons-wrapper {
+	justify-content: center !important;
+}
+
+/* Cart: blue fill, white icon */
+.archive-seo-related .btn-cart {
+	height: 35px !important;
+	background: rgba(66, 139, 202, 1) !important;
+	color: #fff !important;
+	border: 1px solid rgba(66, 139, 202, 1) !important;
+}
+
+.archive-seo-related .btn-cart:before {
+	color: #fff !important;
+}
+
+.archive-seo-related .btn-cart:hover {
+	background: rgba(66, 139, 202, .85) !important;
+}
+
+/* Wishlist + compare: white fill, blue icon */
+.archive-seo-related .btn-wishlist,
+.archive-seo-related .btn-compare {
+	background: unset !important;
+	color: rgba(66, 139, 202, 1) !important;
+}
+
+.archive-seo-related .btn-wishlist:before,
+.archive-seo-related .btn-compare:before {
+	color: rgba(66, 139, 202, 1) !important;
+}
+
+.archive-seo-related .btn-wishlist:hover,
+.archive-seo-related .btn-compare:hover {
+	background: unset !important;
+	color: rgba(66, 139, 202, 1) !important;
+}
+
+.archive-seo-related .btn-wishlist:hover:before,
+.archive-seo-related .btn-compare:hover:before {
+	color: rgba(43, 176, 227, 1) !important;
+}

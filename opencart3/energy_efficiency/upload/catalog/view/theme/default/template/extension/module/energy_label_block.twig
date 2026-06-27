@@ -1,0 +1,46 @@
+{% if show_product %}
+    <div class="energy-label-block">
+        {% for type, label in labels %}
+            {% if label.energy_class_id %}
+                <div class="energy-label-row">
+                    <span class="energy-label-type-name">
+                        {% if type == 'cooling' %}{{ label_cooling }}
+                        {% elseif type == 'heating' %}{{ label_heating }}
+                        {% else %}{{ label_general }}
+                        {% endif %}
+                    </span>
+
+                    <div class="energy-label-row-content">
+                        {% if label.label_file %}
+                            <a href="javascript:void(0);"
+                               class="energy-label-btn open-file-modal"
+                               data-file="{{ label.label_file }}"
+                               data-title="{{ label.class_name }}">
+                                {% if classes[label.energy_class_id] is defined and classes[label.energy_class_id].icon %}
+                                    <img src="{{ classes[label.energy_class_id].icon }}"
+                                         alt="{{ label.class_name }}"
+                                         class="energy-label-class-icon">
+                                {% endif %}
+                            </a>
+                        {% else %}
+                            {% if classes[label.energy_class_id] is defined and classes[label.energy_class_id].icon %}
+                                <img src="{{ classes[label.energy_class_id].icon }}"
+                                     alt="{{ label.class_name }}"
+                                     class="energy-label-class-icon">
+                            {% endif %}
+                        {% endif %}
+
+                        {% if label.datasheet_file %}
+                            <a href="javascript:void(0);"
+                               class="energy-label-btn open-file-modal"
+                               data-file="{{ label.datasheet_file }}"
+                               data-title="{{ text_datasheet }}">
+                                <i class="fa fa-file-pdf-o"></i> {{ text_datasheet }}
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endif %}

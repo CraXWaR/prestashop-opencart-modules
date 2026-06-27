@@ -1,0 +1,166 @@
+.google-reviews-section {
+    overflow: hidden;
+}
+
+.gr-swiper {
+    padding-bottom: 40px !important;
+}
+
+.gr-card {
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-sizing: border-box;
+    height: 100%;
+}
+
+.gr-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.gr-author {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    gap: 10px;
+}
+
+.gr-avatar-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.gr-avatar-letter {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #4285F4;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+.gr-author-name {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: block;
+}
+
+.gr-date {
+    font-size: 11px;
+    color: #888;
+    display: block;
+    margin-top: 2px;
+}
+
+.gr-stars {
+    display: flex;
+    gap: 2px;
+}
+
+.gr-star {
+    font-size: 16px;
+    color: #ddd;
+}
+
+.gr-star--filled {
+    color: inherit;
+}
+
+.gr-review-text {
+    font-size: 13px;
+    line-height: 1.5;
+    flex: 1;
+    overflow: hidden;
+}
+
+.gr-read-more {
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-top: auto;
+    display: inline-block;
+}
+
+.gr-read-more:hover {
+    text-decoration: underline;
+}
+
+.gr-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.gr-cols-1 .gr-card { flex: 0 0 100%; }
+.gr-cols-2 .gr-card { flex: 0 0 calc(50% - 10px); }
+.gr-cols-3 .gr-card { flex: 0 0 calc(33.333% - 14px); }
+.gr-cols-4 .gr-card { flex: 0 0 calc(25% - 15px); }
+
+@media (max-width: 991px) {
+    .gr-grid .gr-card {
+        flex: 0 0 calc(50% - 10px);
+    }
+}
+
+@media (max-width: 767px) {
+    .gr-grid .gr-card {
+        flex: 0 0 100%;
+    }
+}
+
+.gr-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+
+.gr-modal--open {
+    display: flex;
+}
+
+.gr-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+}
+
+.gr-modal-box {
+    position: relative;
+    z-index: 1;
+    border-radius: 10px;
+    padding: 30px;
+    max-width: 560px;
+    width: 90%;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+
+.gr-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+}
+

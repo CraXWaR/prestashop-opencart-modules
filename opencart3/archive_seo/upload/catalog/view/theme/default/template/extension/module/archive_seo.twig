@@ -1,0 +1,111 @@
+<div class="module module-products module-products-grid archive-seo-related">
+    {% if title %}
+        <h3 class="title module-title">{{ title }}</h3>
+    {% endif %}
+
+    <div class="module-body">
+        <div class="row">
+            {% for product in products %}
+            <div class="col-xs-6">
+                <div class="product-layout">
+                    <div class="product-thumb">
+
+                        <div class="image">
+                            <a href="{{ product.href }}" class="product-img">
+                                <div>
+                                    <img
+                                        src="{{ product.thumb }}"
+                                        {% if product.thumb2x %}srcset="{{ product.thumb }} 1x, {{ product.thumb2x }} 2x"{% endif %}
+                                        width="{{ product.width }}"
+                                        height="{{ product.height }}"
+                                        alt="{{ product.name }}"
+                                        title="{{ product.name }}"
+                                        class="img-responsive img-first"
+                                    />
+                                </div>
+                            </a>
+
+                            {% if product.discount_pct > 0 %}
+                            <div class="product-labels">
+                                <span class="product-label product-label-default"><b>-{{ product.discount_pct }} %</b></span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="caption">
+                            <div class="name">
+                                <a href="{{ product.href }}">{{ product.name }}</a>
+                            </div>
+
+                            {% if product.price %}
+                            <div class="price">
+                                <div>
+                                    {% if product.special %}
+                                        <span class="price-old">{{ product.price }}</span>
+                                        <span class="price-new">{{ product.special }}</span>
+                                    {% else %}
+                                        <span class="price-normal">{{ product.price }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <div class="rating{% if product.rating == 0 %} no-rating{% endif %}">
+                                <div class="rating-stars">
+                                    {% for i in 1..5 %}
+                                        {% if product.rating < i %}
+                                            <span class="fa fa-stack"><i class="fa fa-star-o fa-stack-2x"></i></span>
+                                        {% else %}
+                                            <span class="fa fa-stack"><i class="fa fa-star fa-stack-2x"></i><i class="fa fa-star-o fa-stack-2x"></i></span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="buttons-wrapper">
+                                <div class="button-group">
+                                    <div class="cart-group">
+                                        <div class="stepper" style="display:none;">
+                                            <input type="hidden" name="quantity" value="1" data-minimum="1" class="form-control" />
+                                            <input type="hidden" name="product_id" value="{{ product.product_id }}" />
+                                            <span><i class="fa fa-angle-up"></i><i class="fa fa-angle-down"></i></span>
+                                        </div>
+                                        <a class="btn btn-cart"
+                                           data-toggle="tooltip"
+                                           data-tooltip-class="product-grid cart-tooltip"
+                                           data-placement="top"
+                                           title="{{ button_cart }}"
+                                           onclick="cart.add('{{ product.product_id }}', $(this).closest('.product-thumb').find('.button-group input[name=&quot;quantity&quot;]').val());"
+                                           data-loading-text="<span class='btn-text'>{{ button_cart }}</span>">
+                                            <span class="btn-text">{{ button_cart }}</span>
+                                        </a>
+                                    </div>
+                                    <div class="wish-group">
+                                        <a class="btn btn-wishlist"
+                                           data-toggle="tooltip"
+                                           data-tooltip-class="product-grid wishlist-tooltip"
+                                           data-placement="top"
+                                           title="{{ button_wishlist }}"
+                                           onclick="wishlist.add('{{ product.product_id }}')">
+                                            <span class="btn-text">{{ button_wishlist }}</span>
+                                        </a>
+                                        <a class="btn btn-compare"
+                                           data-toggle="tooltip"
+                                           data-tooltip-class="product-grid compare-tooltip"
+                                           data-placement="top"
+                                           title="{{ button_compare }}"
+                                           onclick="compare.add('{{ product.product_id }}')">
+                                            <span class="btn-text">{{ button_compare }}</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>

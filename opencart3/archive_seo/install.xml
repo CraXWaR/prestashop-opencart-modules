@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+    <name>SEO Archive</name>
+    <code>archive_seo</code>
+    <version>1.0.0</version>
+    <author>Emanuil</author>
+    <link>https://yoursite.com</link>
+
+    <file path="admin/view/template/catalog/product_form.twig">
+        <operation>
+            <search regex="true"><![CDATA[~<select name="status" id="input-status"[^>]*>.*?</select>~s]]></search>
+            <add position="replace"><![CDATA[<select name="status" id="input-status" class="form-control">
+                    <option value="1"{% if status == 1 %} selected="selected"{% endif %}>{{ text_enabled }}</option>
+                    <option value="0"{% if status == 0 %} selected="selected"{% endif %}>{{ text_disabled }}</option>
+                    <option value="2"{% if status == 2 %} selected="selected"{% endif %}>{{ text_seo_archive }}</option>
+                  </select>]]></add>
+        </operation>
+    </file>
+
+    <file path="admin/controller/catalog/product.php">
+        <operation>
+            <search regex="true"><![CDATA[~'status'\s*=>\s*\$result\['status'\] \? \$this->language->get\('text_enabled'\) : \$this->language->get\('text_disabled'\),~]]></search>
+            <add position="replace"><![CDATA['status'     => ($result['status'] == 2 ? $this->language->get('text_seo_archive') : ($result['status'] ? $this->language->get('text_enabled') : $this->language->get('text_disabled'))),]]></add>
+        </operation>
+    </file>
+
+    <file path="admin/language/*/catalog/product.php">
+        <operation>
+            <search><![CDATA[<?php]]></search>
+            <add position="after"><![CDATA[
+$_['text_seo_archive'] = 'SEO Archive';]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/model/catalog/product.php">
+        <operation>
+            <search regex="true"><![CDATA[~\(int\)\$product_id \. "' AND pd\.language_id = '" \. \(int\)\$this->config->get\('config_language_id'\) \. "' AND p\.status = '1'~]]></search>
+            <add position="replace"><![CDATA[(int)$product_id . "' AND pd.language_id = '" . (int)$this->config->get('config_language_id') . "' AND p.status IN ('1', '2')]]></add>
+        </operation>
+    </file>
+
+    <!-- Journal 3 theme: its product page re-fetches the product through its own model
+         (catalog/model/journal3/product.php::getProduct), which filters status = '1'. Without
+         this, an archived (status=2) product loads but Journal builds no product data, so the
+         image carousel renders empty. Relax only getProduct's WHERE (anchored on the product_ids
+         list) so related/featured/etc. still exclude archived products. Skipped on non-Journal
+         stores (file absent). OC4.1+ uses a different (backticked, JOIN-clause) query not covered here. -->
+    <file path="catalog/model/journal3/product.php">
+        <operation error="skip">
+            <search regex="true"><![CDATA[~IN \(" \. implode\(',', \$product_ids\) \. "\) AND pd\.language_id = '" \. \(int\)\$this->config->get\('config_language_id'\) \. "' AND p\.status = '1'~]]></search>
+            <add position="replace"><![CDATA[IN (" . implode(',', $product_ids) . ") AND pd.language_id = '" . (int)$this->config->get('config_language_id') . "' AND p.status IN ('1', '2')]]></add>
+        </operation>
+    </file>
+
+</modification>

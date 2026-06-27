@@ -1,0 +1,16 @@
+.energy-label-badges {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 8px;
+}
+
+.energy-label-badge {
+    display: inline-flex;
+    align-items: center;
+}
+
+.energy-label-badge-icon {
+    height: 32px;
+    width: auto;
+}

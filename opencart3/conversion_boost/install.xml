@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+    <name>Conversion Boost Pack</name>
+    <code>conversion_boost</code>
+    <version>1.0.0</version>
+    <author>Emanuil</author>
+    <link>https://website.com</link>
+
+    <file path="catalog/controller/product/product.php">
+        <operation>
+            <search><![CDATA[$data['header'] = $this->load->controller('common/header');]]></search>
+            <add position="before"><![CDATA[
+                $data['countdown_timer'] = $this->load->controller('extension/module/conversion_boost');
+                $data['sticky_bar'] = $this->load->controller('extension/module/conversion_boost/stickyBar');
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/view/theme/default/template/product/product.twig">
+        <operation>
+            <search limit="1"><![CDATA[<div id="product">]]></search>
+            <add position="before"><![CDATA[
+                {{ countdown_timer }}
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/view/theme/default/template/product/product.twig">
+        <operation>
+            <search><![CDATA[{{ footer }}]]></search>
+            <add position="before"><![CDATA[
+            {{ sticky_bar }}
+        ]]></add>
+        </operation>
+    </file>
+</modification>

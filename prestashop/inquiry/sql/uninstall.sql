@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS `PREFIX_inquiry`;
+DROP TABLE IF EXISTS `PREFIX_inquiry_product`;

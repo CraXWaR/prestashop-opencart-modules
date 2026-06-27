@@ -1,0 +1,38 @@
+<div class="cbp-countdown" style="color: {{ timer_accent_color }}" id="cbp-timer-container" hidden>
+    <p>{{ timer_text }}</p>
+    <div class="cbp-countdown-inner {% if timer_style == 'flip' %}cbp-flip{% endif %}">
+        <div class="cbp-days cbp-block">
+            <span class="cbp-count">0</span>
+            <span class="cbp-label">{{ text_days }}</span>
+        </div>
+        <div class="cbp-separator">:</div>
+        <div class="cbp-hours cbp-block">
+            <span class="cbp-count">0</span>
+            <span class="cbp-label">{{ text_hours }}</span>
+        </div>
+        <div class="cbp-separator">:</div>
+        <div class="cbp-minutes cbp-block">
+            <span class="cbp-count">0</span>
+            <span class="cbp-label">{{ text_minutes }}</span>
+        </div>
+        <div class="cbp-separator">:</div>
+        <div class="cbp-seconds cbp-block">
+            <span class="cbp-count">0</span>
+            <span class="cbp-label">{{ text_seconds }}</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('index.php?route=extension/module/conversion_boost/getServerTime&product_id={{ product_id }}')
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data.remaining_seconds && data.remaining_seconds > 0) {
+                    window.remainingTime = data.remaining_seconds;
+                    document.getElementById('cbp-timer-container').removeAttribute('hidden');
+                    initCountdownTimer();
+                }
+            });
+    });
+</script>

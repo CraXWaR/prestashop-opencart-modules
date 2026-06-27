@@ -1,0 +1,1 @@
+<a href="{$inquiry_url}">{l s='Inquiries' mod='inquiry'}</a>

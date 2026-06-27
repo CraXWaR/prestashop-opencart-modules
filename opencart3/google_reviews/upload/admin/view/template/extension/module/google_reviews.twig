@@ -1,0 +1,405 @@
+{{ header }}{{ column_left }}
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="pull-right">
+                <button type="button" id="button-sync" class="btn btn-warning" data-url="{{ sync_reviews|raw }}">
+                    <i class="fa fa-refresh"></i> {{ button_sync }}
+                </button>
+                <button type="submit" form="form-google-reviews" class="btn btn-primary">
+                    <i class="fa fa-save"></i> {{ button_save }}
+                </button>
+                <a href="{{ cancel }}" class="btn btn-default">
+                    <i class="fa fa-reply"></i> {{ button_cancel }}
+                </a>
+            </div>
+            <h1>{{ heading_title }}</h1>
+            <ul class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                    <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        {% if error_warning %}
+            <div class="alert alert-danger alert-dismissible">
+                <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        {% endif %}
+
+        {% if last_error %}
+            <div class="alert alert-danger alert-dismissible">
+                <i class="fa fa-exclamation-triangle"></i> <strong>{{ text_last_error }}</strong> {{ last_error }}
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        {% endif %}
+
+        <div id="sync-result" class="alert"></div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-google"></i> {{ text_sync_info }}</h3>
+            </div>
+            <div class="panel-body">
+                <p>
+                    <strong>{{ text_last_sync }}</strong>
+                    <span id="last-sync-time">{{ last_sync ? last_sync : text_never }}</span>
+                </p>
+            </div>
+        </div>
+
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-google-reviews"
+              class="form-horizontal">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">{{ text_general }}</h3>
+                </div>
+                <div class="panel-body">
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">{{ entry_status }}</label>
+                        <div class="col-sm-10">
+                            <select name="module_google_reviews_status" class="form-control">
+                                <option value="1" {{ module_google_reviews_status == '1' ? 'selected' : '' }}>{{ text_enabled }}</option>
+                                <option value="0" {{ module_google_reviews_status != '1' ? 'selected' : '' }}>{{ text_disabled }}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">{{ entry_title }}</label>
+                        <div class="col-sm-10">
+                            <ul class="nav nav-tabs" id="language-tabs">
+                                {% for language in languages %}
+                                    <li {% if loop.first %}class="active"{% endif %}>
+                                        <a href="#language{{ language.language_id }}" data-toggle="tab">
+                                            <img src="language/{{ language.code }}/{{ language.code }}.png"
+                                                 title="{{ language.name }}" class="img-circle">
+                                            &nbsp;{{ language.name }}
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                            <div class="tab-content">
+                                {% for language in languages %}
+                                    <div class="tab-pane {% if loop.first %}active{% endif %}"
+                                         id="language{{ language.language_id }}">
+                                        <input type="text"
+                                               name="module_google_reviews_title[{{ language.language_id }}]"
+                                               value="{{ module_google_reviews_title[language.language_id] is defined ? module_google_reviews_title[language.language_id] : '' }}"
+                                               class="form-control" placeholder="{{ entry_title }}">
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">{{ text_api_settings }}</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="form-group {% if error_place_id %}has-error{% endif %}">
+                        <label class="col-sm-2 control-label">{{ entry_place_id }} <span
+                                    class="required">*</span></label>
+                        <div class="col-sm-10">
+                            <input type="text" name="module_google_reviews_place_id"
+                                   value="{{ module_google_reviews_place_id }}"
+                                   class="form-control" placeholder="ChIJ...">
+                            {% if error_place_id %}
+                                <div class="text-danger">{{ error_place_id }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-group {% if error_api_key %}has-error{% endif %}">
+                        <label class="col-sm-2 control-label">{{ entry_api_key }} <span
+                                    class="required">*</span></label>
+                        <div class="col-sm-10">
+                            <input type="text" name="module_google_reviews_api_key"
+                                   value="{{ module_google_reviews_api_key }}"
+                                   class="form-control" placeholder="AIza...">
+                            {% if error_api_key %}
+                                <div class="text-danger">{{ error_api_key }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">{{ entry_cache_time }}</label>
+                        <div class="col-sm-10">
+                            <select name="module_google_reviews_cache_time" class="form-control">
+                                <option value="1" {{ module_google_reviews_cache_time == 1   ? 'selected' : '' }}>{{ text_cache_1h }}</option>
+                                <option value="6" {{ module_google_reviews_cache_time == 6   ? 'selected' : '' }}>{{ text_cache_6h }}</option>
+                                <option value="12" {{ module_google_reviews_cache_time == 12  ? 'selected' : '' }}>{{ text_cache_12h }}</option>
+                                <option value="24" {{ module_google_reviews_cache_time == 24  ? 'selected' : '' }}>{{ text_cache_24h }}</option>
+                                <option value="48" {{ module_google_reviews_cache_time == 48  ? 'selected' : '' }}>{{ text_cache_2days }}</option>
+                                <option value="168" {{ module_google_reviews_cache_time == 168 ? 'selected' : '' }}>{{ text_cache_7days }}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">{{ text_display_settings }}</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">{{ entry_limit }}</label>
+                        <div class="col-sm-10">
+                            <input type="number" name="module_google_reviews_limit"
+                                   value="{{ module_google_reviews_limit ? module_google_reviews_limit : 5 }}"
+                                   class="form-control" min="1" max="20">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">{{ entry_min_rating }}</label>
+                        <div class="col-sm-10">
+                            <select name="module_google_reviews_min_rating" class="form-control">
+                                {% for r in [1, 2, 3, 4, 5] %}
+                                    <option value="{{ r }}" {{ module_google_reviews_min_rating == r ? 'selected' : '' }}>
+                                        {{ r }} ★
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">{{ entry_show_date }}</label>
+                        <div class="col-sm-10">
+                            <label class="radio-inline">
+                                <input type="radio" name="module_google_reviews_show_date" value="1"
+                                        {{ module_google_reviews_show_date == '1' ? 'checked' : '' }}>
+                                {{ text_yes }}
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" name="module_google_reviews_show_date" value="0"
+                                        {{ module_google_reviews_show_date != '1' ? 'checked' : '' }}>
+                                {{ text_no }}
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">{{ entry_show_logo }}</label>
+                        <div class="col-sm-10">
+                            <label class="radio-inline">
+                                <input type="radio" name="module_google_reviews_show_logo" value="1"
+                                        {{ module_google_reviews_show_logo == '1' ? 'checked' : '' }}>
+                                {{ text_yes }}
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" name="module_google_reviews_show_logo" value="0"
+                                        {{ module_google_reviews_show_logo != '1' ? 'checked' : '' }}>
+                                {{ text_no }}
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">{{ text_layout_settings }}</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">{{ entry_enable_slider }}</label>
+                        <div class="col-sm-10">
+                            <label class="radio-inline">
+                                <input type="radio" name="module_google_reviews_enable_slider" value="1"
+                                        {{ module_google_reviews_enable_slider == '1' ? 'checked' : '' }}>
+                                {{ text_yes }}
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" name="module_google_reviews_enable_slider" value="0"
+                                        {{ module_google_reviews_enable_slider != '1' ? 'checked' : '' }}>
+                                {{ text_no }}
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">{{ entry_reviews_per_row }}</label>
+                        <div class="col-sm-10">
+                            <select name="module_google_reviews_reviews_per_row" class="form-control ">
+                                {% for n in [1, 2, 3, 4] %}
+                                    <option value="{{ n }}" {{ module_google_reviews_reviews_per_row == n ? 'selected' : '' }}>
+                                        {{ n }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">{{ entry_mobile_view }}</label>
+                        <div class="col-sm-10">
+                            <select name="module_google_reviews_mobile_view" class="form-control">
+                                <option value="slider" {{ module_google_reviews_mobile_view == 'slider' ? 'selected' : '' }}>
+                                    {{ text_mobile_slider }}
+                                </option>
+                                <option value="stack" {{ module_google_reviews_mobile_view == 'stack' ? 'selected' : '' }}>
+                                    {{ text_mobile_stack }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">{{ text_color_settings }}</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">
+                            {{ entry_background_color }}
+                        </label>
+
+                        <div class="col-sm-10">
+                            <div class="input-group color-wrapper">
+                                <input type="color"
+                                       name="module_google_reviews_background_color"
+                                       value="{{ module_google_reviews_background_color ? module_google_reviews_background_color : '#f9f9f9' }}"
+                                       class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">
+                            {{ entry_card_bg_color }}
+                        </label>
+
+                        <div class="col-sm-10">
+                            <div class="input-group color-wrapper">
+                                <input type="color"
+                                       name="module_google_reviews_card_bg_color"
+                                       value="{{ module_google_reviews_card_bg_color ? module_google_reviews_card_bg_color : '#ffffff' }}"
+                                       class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">
+                            {{ entry_text_color }}
+                        </label>
+
+                        <div class="col-sm-10">
+                            <div class="input-group color-wrapper">
+                                <input type="color"
+                                       name="module_google_reviews_text_color"
+                                       value="{{ module_google_reviews_text_color ? module_google_reviews_text_color : '#333333' }}"
+                                       class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">
+                            {{ entry_accent_color }}
+                        </label>
+
+                        <div class="col-sm-10">
+                            <div class="input-group color-wrapper">
+                                <input type="color"
+                                       name="module_google_reviews_accent_color"
+                                       value="{{ module_google_reviews_accent_color ? module_google_reviews_accent_color : '#f5a623' }}"
+                                       class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#form-google-reviews').on('submit', function (e) {
+            e.preventDefault();
+            $.ajax({
+                url: $('form#form-google-reviews').attr('action'),
+                type: 'POST',
+                data: $('form#form-google-reviews').serialize(),
+                dataType: 'json',
+                success: function (response) {
+                    $('.alert').remove();
+                    if (response.success) {
+                        $('#content').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + response.success + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+                    }
+                    if (response.error) {
+                        $('#content').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> ' + response.error + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+                    }
+                    $('html, body').animate({scrollTop: 0}, 'slow');
+                }
+            });
+        });
+
+        $('#button-sync').on('click', function () {
+            var $btn = $(this).prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> {{ text_syncing }}');
+
+            $.ajax({
+                url: $('#button-sync').data('url'),
+                type: 'GET',
+                dataType: 'json',
+                success: function (json) {
+                    $('.alert').remove();
+                    if (json.success) {
+
+                        if (json.last_sync) {
+                            $('#last-sync-time').text(json.last_sync);
+                        }
+
+                        $('#content').prepend(
+                            '<div class="alert alert-success alert-dismissible">' +
+                            '<i class="fa fa-check-circle"></i> ' +
+                            json.message +
+                            ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>'
+                        );
+
+                    } else {
+
+                        $('#content').prepend(
+                            '<div class="alert alert-danger alert-dismissible">' +
+                            '<i class="fa fa-exclamation-circle"></i> ' +
+                            json.message +
+                            ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>'
+                        );
+                    }
+                },
+                error: function () {
+                    $('.alert').remove();
+                    $('#content').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ text_sync_error }} <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+                    $('html, body').animate({scrollTop: 0}, 'slow');
+                },
+                complete: function () {
+                    $btn.prop('disabled', false).html('<i class="fa fa-refresh"></i> {{ button_sync }}');
+                }
+            });
+        });
+
+        $(document).on('input', '.colorpicker-input', function () {
+            $(this).closest('.input-group').find('.color-preview').css('background', this.value);
+        });
+    });
+</script>
+{{ footer }}

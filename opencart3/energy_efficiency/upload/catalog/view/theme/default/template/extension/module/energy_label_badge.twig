@@ -1,0 +1,13 @@
+{% if labels %}
+    <span class="energy-label-badges">
+        {% for type, label in labels %}
+            {% if classes[label.energy_class_id] is defined and classes[label.energy_class_id].icon %}
+                <span class="energy-label-badge">
+                    <img src="{{ classes[label.energy_class_id].icon }}"
+                         alt="{{ label.class_name }}"
+                         class="energy-label-badge-icon">
+                </span>
+            {% endif %}
+        {% endfor %}
+    </span>
+{% endif %}

@@ -1,0 +1,87 @@
+.cbp-sticky-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    padding: 10px 20px;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    opacity: 0;
+    transform: translateY(-100%);
+}
+
+.cbp-sticky-top {
+    top: 0;
+}
+
+.cbp-sticky-bottom {
+    bottom: 0;
+}
+
+.cbp-sticky-inner {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.cbp-sticky-thumb img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.cbp-sticky-name {
+    flex: 1;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.cbp-sticky-price {
+    font-size: 14px;
+}
+
+.cbp-sticky-price-old {
+    text-decoration: line-through;
+    color: #999;
+    margin-right: 5px;
+}
+
+.cbp-sticky-price-special {
+    color: #e44;
+    font-weight: bold;
+}
+
+.cbp-qty-input {
+    width: 60px;
+    text-align: center;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.cbp-btn-cart {
+    padding: 8px 20px;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.cbp-sticky-bar.cbp-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media (max-width: 767px) {
+    .cbp-sticky-thumb {
+        display: none;
+    }
+
+    .hide-on-mobile {
+        display: none !important;
+    }
+}

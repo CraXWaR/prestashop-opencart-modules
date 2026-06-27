@@ -1,0 +1,44 @@
+{% if product_info %}
+    <div class="cbp-sticky-bar cbp-sticky-{{ sticky_position }} {% if sticky_hide_mobile == '1' %}hide-on-mobile{% endif %}"
+         style="background-color: {{ sticky_bg_color }};">
+        <div class="cbp-sticky-inner">
+            <div class="cbp-sticky-thumb">
+                <img src="{{ thumbnail }}" alt="{{ product_info.name }}">
+            </div>
+            <div class="cbp-sticky-name">
+                {{ product_info.name }}
+            </div>
+            <div class="cbp-sticky-price">
+                {% if special %}
+                    <span class="cbp-sticky-price-old">{{ price }}</span>
+                    <span class="cbp-sticky-price-special">{{ special }}</span>
+                {% else %}
+                    <span>{{ price }}</span>
+                {% endif %}
+            </div>
+            <div class="cbp-sticky-quantity">
+                <input type="number" name="quantity" value="{{ minimum }}" min="{{ minimum }}" class="cbp-qty-input">
+            </div>
+            <div class="cbp-sticky-btn">
+                <button onclick="cbpAddToCart()" style="background-color: {{ sticky_btn_color }}" class="cbp-btn-cart">
+                    <i class="fa fa-shopping-cart"></i> {{ text_add_to_cart }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $('#input-quantity').on('change input', function() {
+            $('.cbp-qty-input').val($(this).val());
+        });
+
+        $('.cbp-qty-input').on('change input', function() {
+            $('#input-quantity').val($(this).val());
+        });
+
+        function cbpAddToCart() {
+            $('#button-cart').trigger('click');
+            $('html, body').animate({ scrollTop: 0 }, 'slow');
+        }
+    </script>
+{% endif %}

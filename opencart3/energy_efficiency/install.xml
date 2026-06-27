@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+    <name>Energy Label - Product Tab</name>
+    <code>energy_label_product_tab</code>
+    <version>1.0</version>
+    <author>Energy Label</author>
+    <link></link>
+
+    <file path="admin/view/template/catalog/product_form.twig">
+        <operation>
+            <search><![CDATA[<li><a href="#tab-seo" data-toggle="tab">{{ tab_seo }}</a></li>]]></search>
+            <add position="after"><![CDATA[
+            <li><a href="#tab-energy" data-toggle="tab">{{ tab_energy_efficiency }}</a></li>
+            ]]></add>
+        </operation>
+
+        <operation>
+            <search><![CDATA[<div class="tab-pane" id="tab-design">]]></search>
+            <add position="before"><![CDATA[
+            <div class="tab-pane" id="tab-energy">
+                {% if energy_types is defined %}
+                {% for type_key, type_label in energy_types %}
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">{{ type_label }}</h3>
+                    </div>
+                    <div class="panel-body">
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">{{ label_energy_class }}</label>
+                            <div class="col-sm-10">
+                                <select name="energy_label[{{ type_key }}][energy_class_id]" class="form-control">
+                                    <option value="">{{ text_none }}</option>
+                                    {% for class in energy_classes %}
+                                    <option value="{{ class.energy_class_id }}"
+                                        {% if energy_label[type_key] is defined and energy_label[type_key].energy_class_id == class.energy_class_id %}selected{% endif %}>
+                                        {{ class.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">{{ label_eu_label }}</label>
+                            <div class="col-sm-10">
+                                {% if energy_label[type_key] is defined and energy_label[type_key].label_file %}
+                                <div class="el-current-file input-group" style="max-width:400px; margin-bottom:8px;">
+                                    <span class="input-group-addon">
+                                        <i class="fa fa-file-pdf-o"></i>
+                                    </span>
+                                    <span class="form-control">{{ energy_label[type_key].label_file_original }}</span>
+                                    <span class="input-group-btn">
+                                        <button type="button" class="btn btn-danger btn-remove-file"
+                                                data-type="{{ type_key }}"
+                                                data-field="label_file">
+                                            <i class="fa fa-trash-o"></i>
+                                        </button>
+                                    </span>
+                                    <input type="hidden" name="energy_label[{{ type_key }}][label_file]"
+                                           value="{{ energy_label[type_key].label_file }}" class="el-file-path">
+                                    <input type="hidden" name="energy_label[{{ type_key }}][label_file_original]"
+                                           value="{{ energy_label[type_key].label_file_original }}">
+                                </div>
+                                {% else %}
+                                <input type="hidden" name="energy_label[{{ type_key }}][label_file]" value="" class="el-file-path">
+                                <input type="hidden" name="energy_label[{{ type_key }}][label_file_original]" value="">
+                                {% endif %}
+                                <div class="input-group" style="max-width:400px;">
+                                    <span class="input-group-addon">
+                                        <i class="fa fa-upload"></i>
+                                    </span>
+                                    <input type="file" name="energy_label_upload[{{ type_key }}][label_file]"
+                                           accept=".jpg,.jpeg,.png,.webp,.pdf" class="form-control">
+                                </div>
+                                <span class="help-block">{{ help_eu_label }}</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">{{ label_datasheet }}</label>
+                            <div class="col-sm-10">
+                                {% if energy_label[type_key] is defined and energy_label[type_key].datasheet_file %}
+                                <div class="el-current-file input-group" style="max-width:400px; margin-bottom:8px;">
+                                    <span class="input-group-addon">
+                                        <i class="fa fa-file-pdf-o"></i>
+                                    </span>
+                                    <span class="form-control">{{ energy_label[type_key].datasheet_file_original }}</span>
+                                    <span class="input-group-btn">
+                                        <button type="button" class="btn btn-danger btn-remove-file"
+                                                data-type="{{ type_key }}"
+                                                data-field="datasheet_file">
+                                            <i class="fa fa-trash-o"></i>
+                                        </button>
+                                    </span>
+                                    <input type="hidden" name="energy_label[{{ type_key }}][datasheet_file]"
+                                           value="{{ energy_label[type_key].datasheet_file }}" class="el-file-path">
+                                    <input type="hidden" name="energy_label[{{ type_key }}][datasheet_file_original]"
+                                           value="{{ energy_label[type_key].datasheet_file_original }}">
+                                </div>
+                                {% else %}
+                                <input type="hidden" name="energy_label[{{ type_key }}][datasheet_file]" value="" class="el-file-path">
+                                <input type="hidden" name="energy_label[{{ type_key }}][datasheet_file_original]" value="">
+                                {% endif %}
+                                <div class="input-group" style="max-width:400px;">
+                                    <span class="input-group-addon">
+                                        <i class="fa fa-upload"></i>
+                                    </span>
+                                    <input type="file" name="energy_label_upload[{{ type_key }}][datasheet_file]"
+                                           accept=".pdf" class="form-control">
+                                </div>
+                                <span class="help-block">{{ help_datasheet }}</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+
+            <script type="text/javascript">
+            $(document).on('click', '.btn-remove-file', function () {
+                if(!confirm('{{ confirm_remove_file }}')) {
+                    return;
+                }
+
+                var $btn = $(this);
+                var type = $btn.data('type');
+                var field = $btn.data('field');
+                var productId = {{ product_id }};
+                var urlRemove = 'index.php?route=extension/module/energy_label/removeProductFile&user_token={{ user_token }}'.replace(/&amp;/g, '&');
+
+                $btn.prop('disabled', true);
+
+                $.ajax({
+                    url : urlRemove,
+                    type : 'POST',
+                    data : { product_id: productId, type: type, field: field },
+                    dataType : 'json',
+                    success : function (json) {
+                        if (json.success) {
+                            $btn.closest('.el-current-file').fadeOut(200, function () {
+                                $(this).remove();
+                            });
+                        }
+                    },
+                    complete: function () {
+                        $btn.prop('disabled', false);
+                    }
+                });
+            });
+            </script>
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/view/theme/journal3/template/product/product.twig">
+        <operation>
+            <search><![CDATA[<div class="product-price-group">]]></search>
+            <add position="before"><![CDATA[
+{{ energy_label_block }}
+        ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/view/theme/journal3/template/journal3/side_products.twig">
+        <operation>
+            <search><![CDATA[{% if product.price %}]]></search>
+            <add position="before"><![CDATA[
+{% if product.energy_badge %}{{ product.energy_badge|raw }}{% endif %}
+        ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/view/theme/default/template/extension/module/featured.twig">
+        <operation>
+            <search><![CDATA[{% if product.price %}]]></search>
+            <add position="before"><![CDATA[
+{% if product.energy_badge %}{{ product.energy_badge|raw }}{% endif %}
+        ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/view/theme/default/template/extension/module/special.twig">
+        <operation>
+            <search><![CDATA[{% if product.price %}]]></search>
+            <add position="before"><![CDATA[
+{% if product.energy_badge %}{{ product.energy_badge|raw }}{% endif %}
+        ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/view/theme/default/template/extension/module/bestseller.twig">
+        <operation>
+            <search><![CDATA[{% if product.price %}]]></search>
+            <add position="before"><![CDATA[
+{% if product.energy_badge %}{{ product.energy_badge|raw }}{% endif %}
+        ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/view/theme/default/template/extension/module/latest.twig">
+        <operation>
+            <search><![CDATA[{% if product.price %}]]></search>
+            <add position="before"><![CDATA[
+{% if product.energy_badge %}{{ product.energy_badge|raw }}{% endif %}
+        ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/view/theme/default/template/common/header.twig">
+        <operation>
+            <search><![CDATA[</head>]]></search>
+            <add position="before"><![CDATA[
+{% if custom_css is defined and custom_css %}
+<style>{{ custom_css }}</style>
+{% endif %}
+        ]]></add>
+        </operation>
+    </file>
+
+</modification>

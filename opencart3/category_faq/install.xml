@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+    <name>Category FAQ</name>
+    <code>category_faq</code>
+    <version>1.0.0</version>
+    <author>Emanuil</author>
+    <link>https://website.com</link>
+
+    <file path="admin/controller/catalog/category.php">
+
+        <operation>
+            <search><![CDATA[$this->load->language('catalog/category');]]></search>
+            <add position="after"><![CDATA[
+        $this->load->language('extension/module/category_faq_form');
+        ]]>            </add>
+        </operation>
+
+        <operation>
+            <search><![CDATA[$data['header'] = $this->load->controller('common/header');]]></search>
+            <add position="before"><![CDATA[
+        $data['tab_faq'] = $this->language->get('tab_faq');
+
+        $data['column_question'] = $this->language->get('column_question');
+        $data['column_answer'] = $this->language->get('column_answer');
+        $data['column_sort_order'] = $this->language->get('column_sort_order');
+
+        $data['button_add_faq'] = $this->language->get('button_add_faq');
+        ]]>            </add>
+        </operation>
+
+    </file>
+
+    <file path="admin/view/template/catalog/category_form.twig">
+        <operation>
+            <search><![CDATA[<li><a href="#tab-design" data-toggle="tab">{{ tab_design }}</a></li>]]></search>
+            <add position="after"><![CDATA[
+            <li><a href="#tab-faq" data-toggle="tab">{{ tab_faq }}</a></li>
+            ]]>            </add>
+        </operation>
+
+        <operation>
+            <search><![CDATA[<div class="tab-pane" id="tab-design">]]></search>
+            <add position="before"><![CDATA[
+            <div class="tab-pane" id="tab-faq">
+    <div class="panel-body">
+            <table id="faq-table" class="table table-striped table-bordered table-hover">
+                <thead>
+                <tr>
+                    <td>{{ column_question }}</td>
+                    <td>{{ column_answer }}</td>
+                    <td width="100">{{ column_sort_order }}</td>
+                    <td width="50"></td>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% set faq_row = 0 %}
+
+                {% if category_faqs %}
+                    {% for faq in category_faqs %}
+                        <tr id="faq-row{{ faq_row }}">
+                            <td>
+                                {% for language in languages %}
+                                    <div class="input-group" style="margin-bottom:5px;">
+                                        <span class="input-group-addon">
+                                            <img src="language/{{ language.code }}/{{ language.code }}.png" title="{{ language.name }}">
+                                        </span>
+
+                                        <input type="text" name="category_faq[{{ faq_row }}][description][{{ language.language_id }}][question]" value="{{ faq.description[language.language_id].question ?? '' }}" placeholder="{{ column_question }}" class="form-control"/>
+                                    </div>
+                                {% endfor %}
+                            </td>
+
+                            <td>
+                                {% for language in languages %}
+                                    <div class="input-group" style="margin-bottom:5px;">
+                                        <span class="input-group-addon">
+                                            <img src="language/{{ language.code }}/{{ language.code }}.png" title="{{ language.name }}">
+                                        </span>
+
+                                        <textarea
+                                                name="category_faq[{{ faq_row }}][description][{{ language.language_id }}][answer]" rows="3" placeholder="{{ column_answer }}" class="form-control">{{ faq.description[language.language_id].answer ?? '' }}</textarea>
+                                    </div>
+                                {% endfor %}
+                            </td>
+
+                            <td>
+                                <input type="text" name="category_faq[{{ faq_row }}][sort_order]" value="{{ faq.sort_order }}" class="form-control"/>
+                            </td>
+
+                            <td class="text-center">
+                                <button type="button" onclick="$('#faq-row{{ faq_row }}').remove();" class="btn btn-danger">
+                                    <i class="fa fa-minus-circle"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% set faq_row = faq_row + 1 %}
+                    {% endfor %}
+                {% endif %}
+                </tbody>
+
+                <tfoot>
+                <tr>
+                    <td colspan="3"></td>
+                    <td class="text-center">
+                        <button type="button" onclick="addFaq();" class="btn btn-primary" title="{{ button_add_faq }}">
+                            <i class="fa fa-plus-circle"></i>
+                        </button>
+                    </td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+</div>
+
+<script type="text/javascript">
+let faq_row = {{ faq_row|default(0) }};
+
+function addFaq() {
+    html = '<tr id="faq-row' + faq_row + '">';
+
+    html += '<td>';
+
+    {% for language in languages %}
+    html += '<div class="input-group" style="margin-bottom:5px;">';
+    html += '<span class="input-group-addon">';
+    html += '<img src="language/{{ language.code }}/{{ language.code }}.png" title="{{ language.name }}">';
+    html += '</span>';
+    html += '<input type="text" name="category_faq[' + faq_row + '][description][{{ language.language_id }}][question]" value="" placeholder="{{ column_question }}" class="form-control">';
+    html += '</div>';
+    {% endfor %}
+
+    html += '</td>';
+
+    html += '<td>';
+
+    {% for language in languages %}
+    html += '<div class="input-group" style="margin-bottom:5px;">';
+    html += '<span class="input-group-addon">';
+    html += '<img src="language/{{ language.code }}/{{ language.code }}.png" title="{{ language.name }}">';
+    html += '</span>';
+    html += '<textarea name="category_faq[' + faq_row + '][description][{{ language.language_id }}][answer]" rows="3" placeholder="{{ column_answer }}" class="form-control"></textarea>';
+    html += '</div>';
+    {% endfor %}
+
+    html += '</td>';
+
+    html += '<td>';
+    html += '<input type="text" name="category_faq[' + faq_row + '][sort_order]" value="0" class="form-control">';
+    html += '</td>';
+
+    html += '<td class="text-center">';
+    html += '<button type="button" onclick="$(\'#faq-row' + faq_row + '\').remove();" class="btn btn-danger">';
+    html += '<i class="fa fa-minus-circle"></i>';
+    html += '</button>';
+    html += '</td>';
+
+    html += '</tr>';
+
+    $('#faq-table tbody').append(html);
+
+    faq_row++;
+}
+</script>
+            ]]>            </add>
+        </operation>
+    </file>
+
+    <file path="catalog/view/theme/default/template/product/category.twig">
+        <operation>
+            <search><![CDATA[{{ footer }}]]></search>
+            <add position="before"><![CDATA[
+{% if faqs %}
+<div class="container">
+    <div class="panel-group" id="accordion-faq" role="tablist">
+        {% for faq in faqs %}
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="faq-heading-{{ loop.index }}">
+                <h4 class="panel-title">
+                    <a role="button" data-toggle="collapse" data-parent="#accordion-faq" href="#faq-collapse-{{ loop.index }}" aria-expanded="{% if loop.first %}true{% else %}false{% endif %}">
+                        {{ faq.question }}
+                    </a>
+                </h4>
+            </div>
+            <div id="faq-collapse-{{ loop.index }}" class="panel-collapse collapse {% if loop.first %}in{% endif %}" role="tabpanel">
+                <div class="panel-body">
+                    {{ faq.answer }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+]]>            </add>
+        </operation>
+    </file>
+
+    <file path="catalog/view/theme/journal3/template/product/category.twig">
+        <operation>
+            <search><![CDATA[{{ footer }}]]></search>
+            <add position="before"><![CDATA[
+{% if faqs %}
+<div class="container">
+    <div class="row category-faq-row">
+        <div id="content">
+            <h2 class="category-faq-title">Често задавани въпроси за {{ heading_title }}</h2>
+            <div class="panel-group" id="accordion-faq" role="tablist">
+                {% for faq in faqs %}
+                <div class="panel panel-default">
+                    <div class="panel-heading" role="tab" id="faq-heading-{{ loop.index }}">
+                        <h4 class="panel-title">
+                            <a role="button" data-toggle="collapse" data-parent="#accordion-faq" href="#faq-collapse-{{ loop.index }}" aria-expanded="{% if loop.first %}true{% else %}false{% endif %}">
+                                {{ faq.question }}
+                            </a>
+                        </h4>
+                    </div>
+                    <div id="faq-collapse-{{ loop.index }}" class="panel-collapse collapse {% if loop.first %}in{% endif %}" role="tabpanel">
+                        <div class="panel-body">
+                            {{ faq.answer }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+]]>            </add>
+        </operation>
+    </file>
+</modification>
