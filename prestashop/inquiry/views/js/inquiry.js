@@ -33,17 +33,14 @@ document.addEventListener('DOMContentLoaded', function () {
     trigger.addEventListener('click', openModal);
     if (closeBtn) closeBtn.addEventListener('click', closeModal);
 
-    // Click on the backdrop (outside the card) closes the modal
     overlay.addEventListener('click', function (e) {
         if (e.target === overlay) closeModal();
     });
 
-    // Escape closes the modal
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' || e.keyCode === 27) closeModal();
     });
 
-    // Keep Tab focus inside the modal while it is open
     overlay.addEventListener('keydown', function (e) {
         if (e.key !== 'Tab' && e.keyCode !== 9) return;
 
@@ -62,5 +59,24 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
             first.focus();
         }
+    });
+});
+
+window.addEventListener('load', function () {
+    if (!window.jQuery || !jQuery.fn || !jQuery.fn.select2) return;
+
+    var $sel = jQuery('#inq-cat-select');
+    if (!$sel.length || $sel.hasClass('select2-hidden-accessible')) return;
+
+    $sel.select2({
+        width: '100%',
+        placeholder: $sel.data('placeholder'),
+        dropdownCssClass: 'inq-select2-drop'
+    });
+
+    $sel.closest('.inq-cat-filter').addClass('inq-cat-enhanced');
+
+    $sel.on('change', function () {
+        if (this.form) this.form.submit();
     });
 });

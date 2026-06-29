@@ -23,6 +23,7 @@ class Inquiry extends Module
     {
         return parent::install()
             && $this->installDb()
+            && $this->installTab()
             && $this->registerHook('actionFrontControllerSetMedia')
             && Configuration::updateValue('INQUIRY_AUTO_APPROVE', 0)
             && $this->registerHook('moduleRoutes')
@@ -33,6 +34,7 @@ class Inquiry extends Module
     {
         return parent::uninstall()
             && $this->uninstallDb()
+            && $this->uninstallTab()
             && Configuration::deleteByName('INQUIRY_AUTO_APPROVE');
     }
 
@@ -62,6 +64,31 @@ class Inquiry extends Module
         return true;
     }
 
+    private function installTab()
+    {
+        $tab = new Tab();
+        $tab->active = 1;
+        $tab->class_name = 'AdminInquiry';
+        $tab->name = [];
+        foreach (Language::getLanguages(true) as $lang) {
+            $tab->name[$lang['id_lang']] = 'Запитвания';
+        }
+        $tab->id_parent = (int) Tab::getIdFromClassName('AdminParentCustomer'); // ← Clients dropdown
+        $tab->module = $this->name;
+
+        return $tab->add();
+    }
+
+    private function uninstallTab()
+    {
+        $id_tab = (int) Tab::getIdFromClassName('AdminInquiry');
+        if ($id_tab) {
+            $tab = new Tab($id_tab);
+            return $tab->delete();
+        }
+        return true;
+    }
+
     public function hookActionAdminControllerSetMedia()
     {
         $this->context->controller->registerStylesheet(
@@ -84,8 +111,18 @@ class Inquiry extends Module
             && $this->context->controller->module instanceof Inquiry
         ) {
             $this->context->controller->registerStylesheet(
+                'select2-css',
+                'modules/' . $this->name . '/views/css/select2.min.css',
+                ['media' => 'all', 'priority' => 150]
+            );
+            $this->context->controller->registerStylesheet(
                 'inquiry-css',
                 'modules/' . $this->name . '/views/css/page.css'
+            );
+            $this->context->controller->registerJavascript(
+                'select2-js',
+                'modules/' . $this->name . '/views/js/select2.min.js',
+                ['position' => 'bottom', 'priority' => 150]
             );
             $this->context->controller->registerJavascript(
                 'inquiry-js',
@@ -164,6 +201,7 @@ class Inquiry extends Module
                 'admin_reply' => pSQL(Tools::getValue('admin_reply')),
                 'id_category' => (int) Tools::getValue('id_category') ?: null,
             ];
+            
             // Stamp the replying employee only when a reply was actually written
             if (trim(Tools::getValue('admin_reply')) !== '') {
                 $fields['id_employee'] = (int) $this->context->employee->id;

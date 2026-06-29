@@ -144,9 +144,12 @@ class InquiryPageModuleFrontController extends ModuleFrontController
         $rawCategories = $db->executeS(
             'SELECT c.id_category, cl.name
             FROM `' . _DB_PREFIX_ . 'category` c
-            INNER JOIN `' . _DB_PREFIX_ . 'category_lang` cl ON (c.id_category = cl.id_category)
-            WHERE cl.id_lang = ' . (int) $this->context->language->id . '
-            AND c.active = 1
+            ' . Shop::addSqlAssociation('category', 'c') . '
+            INNER JOIN `' . _DB_PREFIX_ . 'category_lang` cl
+                ON (c.id_category = cl.id_category
+                    AND cl.id_lang = ' . (int) $this->context->language->id . '
+                    AND cl.id_shop = ' . (int) $this->context->shop->id . ')
+            WHERE c.active = 1
             AND c.id_category != 1
             ORDER BY cl.name ASC'
         );
@@ -176,7 +179,7 @@ class InquiryPageModuleFrontController extends ModuleFrontController
         foreach ($inquiries as &$inquiry) {
             $inquiry['url'] = $this->context->link->getModuleLink(
                 $this->module->name,
-                'inquiry',
+                'detail',
                 ['id' => (int) $inquiry['id_inquiry']]
             );
 

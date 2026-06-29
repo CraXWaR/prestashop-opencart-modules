@@ -5,9 +5,6 @@
 {/block}
 
 {block name='page_content'}
-    {* Fonts: loaded here so they fetch in parallel with the module CSS
-       (avoids a render-blocking @import inside page.css). Both faces
-       carry full Cyrillic. *}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap">
@@ -82,16 +79,21 @@
         {/if}
 
         {if $categories|@count > 0}
-            <nav class="inq-cat-filter" aria-label="{l s='Филтриране по категория' mod='inquiry'}">
-                <a href="{$search_url}" class="inq-cat-btn{if $current_category == 0} inq-cat-active{/if}">
-                    {l s='Всички' mod='inquiry'}
-                </a>
-                {foreach $categories as $cat}
-                    <a href="{$cat.url}" class="inq-cat-btn{if $cat.active} inq-cat-active{/if}">
-                        {$cat.name|escape:'html':'UTF-8'}
-                    </a>
+            <form method="get" action="{$search_action}" class="inq-cat-filter">
+                {foreach from=$search_hidden key=hk item=hv}
+                    <input type="hidden" name="{$hk|escape:'html':'UTF-8'}" value="{$hv|escape:'html':'UTF-8'}">
                 {/foreach}
-            </nav>
+                <label class="inq-cat-label" for="inq-cat-select">{l s='Категория' mod='inquiry'}</label>
+                <select id="inq-cat-select" name="category" class="inq-cat-select"
+                        data-placeholder="{l s='Търси категория…' mod='inquiry'}"
+                        aria-label="{l s='Филтриране по категория' mod='inquiry'}">
+                    <option value="0"{if $current_category == 0} selected{/if}>{l s='Всички категории' mod='inquiry'}</option>
+                    {foreach $categories as $cat}
+                        <option value="{$cat.id_category}"{if $cat.active} selected{/if}>{$cat.name|escape:'html':'UTF-8'}</option>
+                    {/foreach}
+                </select>
+                <button type="submit" class="inq-cat-go">{l s='Покажи' mod='inquiry'}</button>
+            </form>
         {/if}
 
         {if $inq_pagination.total_inquiries > 0}
@@ -185,7 +187,5 @@
                 {/if}
             </nav>
         {/if}
-
-
     </div>
 {/block}
