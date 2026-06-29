@@ -168,6 +168,16 @@ class InquiryPageModuleFrontController extends ModuleFrontController
             ];
         }
 
+        if ($this->currentCategory > 0) {
+            foreach ($categories as $i => $cat) {
+                if ($cat['active']) {
+                    unset($categories[$i]);
+                    array_unshift($categories, $cat);
+                    break;
+                }
+            }
+        }
+
         $employees = $db->executeS(
             'SELECT id_employee, firstname, lastname FROM `' . _DB_PREFIX_ . 'employee`'
         );

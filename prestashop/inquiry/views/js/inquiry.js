@@ -62,21 +62,49 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-window.addEventListener('load', function () {
-    if (!window.jQuery || !jQuery.fn || !jQuery.fn.select2) return;
+document.addEventListener('DOMContentLoaded', function () {
+    var track = document.getElementById('inq-cat-track');
+    var btnPrev = document.getElementById('inq-cat-prev');
+    var btnNext = document.getElementById('inq-cat-next');
+    if (!track || !btnPrev || !btnNext) return;
 
-    var $sel = jQuery('#inq-cat-select');
-    if (!$sel.length || $sel.hasClass('select2-hidden-accessible')) return;
+    function updateArrows() {
+        btnPrev.classList.toggle('inq-cat-arrow-hidden', track.scrollLeft < 8);
+        btnNext.classList.toggle('inq-cat-arrow-hidden',
+            track.scrollLeft + track.clientWidth >= track.scrollWidth - 8);
+    }
 
-    $sel.select2({
-        width: '100%',
-        placeholder: $sel.data('placeholder'),
-        dropdownCssClass: 'inq-select2-drop'
+    function pillLeft(pill) {
+        return pill.getBoundingClientRect().left
+            - track.getBoundingClientRect().left
+            + track.scrollLeft;
+    }
+    function pills() {
+        return Array.prototype.slice.call(track.querySelectorAll('.inq-cat-pill'));
+    }
+
+    btnNext.addEventListener('click', function () {
+        var list = pills();
+        for (var i = 0; i < list.length; i++) {
+            if (pillLeft(list[i]) > track.scrollLeft + 1) {
+                track.scrollTo({ left: pillLeft(list[i]), behavior: 'smooth' });
+                return;
+            }
+        }
     });
 
-    $sel.closest('.inq-cat-filter').addClass('inq-cat-enhanced');
-
-    $sel.on('change', function () {
-        if (this.form) this.form.submit();
+    btnPrev.addEventListener('click', function () {
+        var list = pills();
+        var target = 0;
+        for (var i = 0; i < list.length; i++) {
+            if (pillLeft(list[i]) < track.scrollLeft - 1) {
+                target = pillLeft(list[i]);
+            }
+        }
+        track.scrollTo({ left: target, behavior: 'smooth' });
     });
+
+    track.addEventListener('scroll', updateArrows, { passive: true });
+    window.addEventListener('resize', updateArrows);
+    updateArrows();
 });

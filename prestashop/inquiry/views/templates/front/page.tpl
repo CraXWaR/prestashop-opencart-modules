@@ -79,21 +79,22 @@
         {/if}
 
         {if $categories|@count > 0}
-            <form method="get" action="{$search_action}" class="inq-cat-filter">
-                {foreach from=$search_hidden key=hk item=hv}
-                    <input type="hidden" name="{$hk|escape:'html':'UTF-8'}" value="{$hv|escape:'html':'UTF-8'}">
-                {/foreach}
-                <label class="inq-cat-label" for="inq-cat-select">{l s='Категория' mod='inquiry'}</label>
-                <select id="inq-cat-select" name="category" class="inq-cat-select"
-                        data-placeholder="{l s='Търси категория…' mod='inquiry'}"
-                        aria-label="{l s='Филтриране по категория' mod='inquiry'}">
-                    <option value="0"{if $current_category == 0} selected{/if}>{l s='Всички категории' mod='inquiry'}</option>
-                    {foreach $categories as $cat}
-                        <option value="{$cat.id_category}"{if $cat.active} selected{/if}>{$cat.name|escape:'html':'UTF-8'}</option>
-                    {/foreach}
-                </select>
-                <button type="submit" class="inq-cat-go">{l s='Покажи' mod='inquiry'}</button>
-            </form>
+            <div class="inq-cat-slider">
+                <button type="button" id="inq-cat-prev" class="inq-cat-arrow inq-cat-arrow-hidden" aria-label="{l s='Предишни категории' mod='inquiry'}">‹</button>
+                <div class="inq-cat-track-wrap">
+                    <div id="inq-cat-track" class="inq-cat-track">
+                        <a href="{$search_action}" class="inq-cat-pill{if $current_category == 0} inq-cat-pill-active{/if}">
+                            {l s='Всички' mod='inquiry'}
+                        </a>
+                        {foreach $categories as $cat}
+                            <a href="{$cat.url}" class="inq-cat-pill{if $cat.active} inq-cat-pill-active{/if}">
+                                {$cat.name|escape:'html':'UTF-8'}
+                            </a>
+                        {/foreach}
+                    </div>
+                </div>
+                <button type="button" id="inq-cat-next" class="inq-cat-arrow" aria-label="{l s='Следващи категории' mod='inquiry'}">›</button>
+            </div>
         {/if}
 
         {if $inq_pagination.total_inquiries > 0}

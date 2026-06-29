@@ -111,18 +111,8 @@ class Inquiry extends Module
             && $this->context->controller->module instanceof Inquiry
         ) {
             $this->context->controller->registerStylesheet(
-                'select2-css',
-                'modules/' . $this->name . '/views/css/select2.min.css',
-                ['media' => 'all', 'priority' => 150]
-            );
-            $this->context->controller->registerStylesheet(
                 'inquiry-css',
                 'modules/' . $this->name . '/views/css/page.css'
-            );
-            $this->context->controller->registerJavascript(
-                'select2-js',
-                'modules/' . $this->name . '/views/js/select2.min.js',
-                ['position' => 'bottom', 'priority' => 150]
             );
             $this->context->controller->registerJavascript(
                 'inquiry-js',
@@ -235,9 +225,12 @@ class Inquiry extends Module
         $categories = Db::getInstance()->executeS(
             'SELECT c.id_category, cl.name
             FROM `' . _DB_PREFIX_ . 'category` c
-            INNER JOIN `' . _DB_PREFIX_ . 'category_lang` cl ON (c.id_category = cl.id_category)
-            WHERE cl.id_lang = ' . (int) $this->context->language->id . '
-            AND c.active = 1
+            ' . Shop::addSqlAssociation('category', 'c') . '
+            INNER JOIN `' . _DB_PREFIX_ . 'category_lang` cl
+                ON (c.id_category = cl.id_category
+                    AND cl.id_lang = ' . (int) $this->context->language->id . '
+                    AND cl.id_shop = ' . (int) $this->context->shop->id . ')
+            WHERE c.active = 1
             AND c.id_category != 1
             ORDER BY cl.name ASC'
         );
