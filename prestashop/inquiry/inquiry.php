@@ -134,16 +134,13 @@ class Inquiry extends Module
                     'module' => 'inquiry',
                 ],
             ],
-            'module-inquiry-inquiry' => [
-                'controller' => 'inquiry',
+            'module-inquiry-detail' => [
+                'controller' => 'detail',
                 'rule' => 'inquiries/{id}',
                 'keywords' => [
                     'id' => ['regexp' => '[0-9]+', 'param' => 'id'],
                 ],
-                'params' => [
-                    'fc' => 'module',
-                    'module' => 'inquiry',
-                ],
+                'params' => ['fc' => 'module', 'module' => 'inquiry'],
             ],
         ];
     }
@@ -191,7 +188,7 @@ class Inquiry extends Module
                 'admin_reply' => pSQL(Tools::getValue('admin_reply')),
                 'id_category' => (int) Tools::getValue('id_category') ?: null,
             ];
-            
+
             // Stamp the replying employee only when a reply was actually written
             if (trim(Tools::getValue('admin_reply')) !== '') {
                 $fields['id_employee'] = (int) $this->context->employee->id;
@@ -246,7 +243,7 @@ class Inquiry extends Module
                     WHERE i.id_product = cp.id_product AND i.cover = 1
                     LIMIT 1) as id_image
                     FROM `' . _DB_PREFIX_ . 'inquiry_product` cp
-                    INNER JOIN `' . _DB_PREFIX_ . 'product_lang` pl ON (cp.id_product = pl.id_product AND pl.id_lang = ' . (int) $this->context->language->id . ')
+                    INNER JOIN `' . _DB_PREFIX_ . 'product_lang` pl ON (cp.id_product = pl.id_product AND pl.id_lang = ' . (int) $this->context->language->id . ' AND pl.id_shop = ' . (int) $this->context->shop->id . ')
                     INNER JOIN `' . _DB_PREFIX_ . 'product` p ON cp.id_product = p.id_product
                     WHERE cp.id_inquiry = ' . (int) $inquiry['id_inquiry']
             );

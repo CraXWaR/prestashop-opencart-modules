@@ -201,7 +201,7 @@ class InquiryPageModuleFrontController extends ModuleFrontController
             l.id_image,
             l.legend
                 FROM `' . _DB_PREFIX_ . 'inquiry_product` cp
-                INNER JOIN `' . _DB_PREFIX_ . 'product_lang` pl ON (cp.id_product = pl.id_product AND pl.id_lang = ' . (int) $this->context->language->id . ')
+                INNER JOIN `' . _DB_PREFIX_ . 'product_lang` pl ON (cp.id_product = pl.id_product AND pl.id_lang = ' . (int) $this->context->language->id . ' AND pl.id_shop = ' . (int) $this->context->shop->id . ')
                 LEFT JOIN `' . _DB_PREFIX_ . 'image_lang` l ON (l.id_image = (
                     SELECT i.id_image FROM `' . _DB_PREFIX_ . 'image` i
                     WHERE i.id_product = cp.id_product AND i.cover = 1 LIMIT 1
