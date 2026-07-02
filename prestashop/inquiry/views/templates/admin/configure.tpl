@@ -28,6 +28,38 @@
                         <p class="inq-help">{l s='Когато е включено, новите запитвания се публикуват веднага. Когато е изключено, остават в изчакване, докато ги одобрите.' mod='inquiry'}</p>
                     </div>
                 </div>
+
+                <div class="inq-form-row">
+                    <div class="inq-form-label">{l s='SEO заглавие' mod='inquiry'}</div>
+                    <div class="inq-form-control">
+                        <input type="text" name="seo_meta_title" class="inq-input inq-input-full" value="{$seo_meta_title|escape:'html':'UTF-8'}">
+                        <p class="inq-help">{l s='Налични променливи: %title%, %shop_name%. Ще бъде съкратено до 70 символа на страницата на запитването.' mod='inquiry'}</p>
+                    </div>
+                </div>
+
+                <div class="inq-form-row">
+                    <div class="inq-form-label">{l s='SEO описание' mod='inquiry'}</div>
+                    <div class="inq-form-control">
+                        <input type="text" name="seo_meta_desc" class="inq-input inq-input-full" value="{$seo_meta_desc|escape:'html':'UTF-8'}">
+                        <p class="inq-help">{l s='Налични променливи: %title%, %shop_name%. Ще бъде съкратено до 160 символа на страницата на запитването.' mod='inquiry'}</p>
+                    </div>
+                </div>
+
+                <div class="inq-form-row">
+                    <div class="inq-form-label">{l s='reCAPTCHA Site Key' mod='inquiry'}</div>
+                    <div class="inq-form-control">
+                        <input type="text" name="recaptcha_site_key" class="inq-input inq-input-full" value="{$recaptcha_site_key|escape:'html':'UTF-8'}">
+                        <p class="inq-help">{l s='Получава се от' mod='inquiry'} <a href="https://www.google.com/recaptcha/admin" target="_blank" rel="noopener">google.com/recaptcha/admin</a> {l s='(reCAPTCHA v2 "Не съм робот").' mod='inquiry'}</p>
+                    </div>
+                </div>
+
+                <div class="inq-form-row">
+                    <div class="inq-form-label">{l s='reCAPTCHA Secret Key' mod='inquiry'}</div>
+                    <div class="inq-form-control">
+                        <input type="password" name="recaptcha_secret_key" class="inq-input inq-input-full" value="{$recaptcha_secret_key|escape:'html':'UTF-8'}" autocomplete="off">
+                        <p class="inq-help">{l s='Ако тези две полета са празни, reCAPTCHA не се показва във формата за запитване.' mod='inquiry'}</p>
+                    </div>
+                </div>
             </div>
             <div class="inq-panel-footer">
                 <button type="submit" name="submit_settings" class="inq-btn inq-btn-primary">
@@ -76,7 +108,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
                                 <span>{l s='Отговор от магазина' mod='inquiry'}</span>
                                 {if $inquiry.id_employee && isset($employee_map[$inquiry.id_employee|intval])}
-                                    <span class="inq-reply-by">— {$employee_map[$inquiry.id_employee|intval]}</span>
+                                    <span class="inq-reply-by">— {$employee_map[$inquiry.id_employee|intval]|escape:'html':'UTF-8'}</span>
                                 {/if}
                             </div>
                             <textarea name="admin_reply" rows="3" class="inq-textarea" placeholder="{l s='Напишете отговор…' mod='inquiry'}">{$inquiry.admin_reply|escape:'html':'UTF-8'}</textarea>
@@ -84,33 +116,21 @@
 
                         <div class="inq-bar">
                             <div class="inq-bar-selects">
-                                <select name="id_category" form="inq-save-{$inquiry.id_inquiry|intval}" class="inq-select" aria-label="{l s='Категория' mod='inquiry'}">
-                                    <option value="0">{l s='— Категория —' mod='inquiry'}</option>
-                                    {foreach $categories as $cat}
-                                        <option value="{$cat.id_category|intval}" {if $inquiry.id_category == $cat.id_category}selected="selected"{/if}>
+                                <select name="id_category[]" form="inq-save-{$inquiry.id_inquiry|intval}" class="inq-select" multiple="multiple" data-ajax-url="{$ajax_search_categories_url}" data-placeholder="{l s='Започнете да пишете, за да изберете категория…' mod='inquiry'}" aria-label="{l s='Категория' mod='inquiry'}">
+                                    {foreach $inquiry.categories as $cat}
+                                        <option value="{$cat.id_category|intval}" selected="selected">
                                             {$cat.name|escape:'html':'UTF-8'}
                                         </option>
                                     {/foreach}
                                 </select>
-                                <select name="id_product" form="inq-save-{$inquiry.id_inquiry|intval}" class="inq-product-select" aria-label="{l s='Продукт' mod='inquiry'}">
-                                    <option value=""></option>
+                                <select name="id_product[]" form="inq-save-{$inquiry.id_inquiry|intval}" class="inq-product-select" multiple="multiple" data-ajax-url="{$ajax_search_products_url}" data-placeholder="{l s='Започнете да пишете, за да изберете продукт…' mod='inquiry'}" aria-label="{l s='Продукт' mod='inquiry'}">
+                                    {foreach $inquiry.products as $product}
+                                        <option value="{$product.id_product|intval}" selected="selected">
+                                            {$product.name|escape:'html':'UTF-8'}
+                                        </option>
+                                    {/foreach}
                                 </select>
                             </div>
-
-                            {if $inquiry.products|@count}
-                                <div class="inq-bar-chips">
-                                    {foreach $inquiry.products as $product}
-                                        <span class="inq-chip">
-                                            <span class="inq-chip-name">{$product.name|escape:'html':'UTF-8'}</span>
-                                            <form method="post" action="{$action_url}">
-                                                <input type="hidden" name="id_inquiry" value="{$inquiry.id_inquiry|intval}">
-                                                <input type="hidden" name="id_product" value="{$product.id_product|intval}">
-                                                <button type="submit" name="remove_product" class="inq-chip-remove" aria-label="{l s='Премахни продукта' mod='inquiry'}" title="{l s='Премахни' mod='inquiry'}">&times;</button>
-                                            </form>
-                                        </span>
-                                    {/foreach}
-                                </div>
-                            {/if}
                         </div>
 
                         <div class="inq-bar-buttons">
@@ -147,8 +167,6 @@
 <script>
 var INQ_MORE = "{l s='Прочети повече' mod='inquiry' js=1}";
 var INQ_LESS = "{l s='Скрий' mod='inquiry' js=1}";
-var INQ_PRODUCTS = {$products_json nofilter};
-var INQ_PRODUCT_PLACEHOLDER = "{l s='Изберете продукт…' mod='inquiry' js=1}";
 {literal}
 (function () {
     var root = document.querySelector('.inquiry-admin');
@@ -177,12 +195,19 @@ var INQ_PRODUCT_PLACEHOLDER = "{l s='Изберете продукт…' mod='in
 
     window.addEventListener('load', function () {
         if (!window.jQuery || !jQuery.fn || !jQuery.fn.select2) { return; }
-        jQuery('.inquiry-admin .inq-product-select').each(function () {
+        jQuery('.inquiry-admin .inq-product-select, .inquiry-admin .inq-select').each(function () {
             var $el = jQuery(this);
             if ($el.hasClass('select2-hidden-accessible')) { return; }
             $el.select2({
-                data: INQ_PRODUCTS,
-                placeholder: INQ_PRODUCT_PLACEHOLDER,
+                ajax: {
+                    url: $el.data('ajax-url'),
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return { q: params.term };
+                    }
+                },
+                placeholder: $el.data('placeholder'),
                 allowClear: true,
                 width: '100%',
                 dropdownCssClass: 'inq-select2-drop'

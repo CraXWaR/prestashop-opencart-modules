@@ -5,10 +5,11 @@ if (!defined('_PS_VERSION_')) {
 
 class InquiryDetailModuleFrontController  extends ModuleFrontController
 {
+    private $metaTitle = '';
+    private $metaDescription = '';
+
     public function initContent()
     {
-        parent::initContent();
-
         $db = Db::getInstance();
         $idInquiry = (int) Tools::getValue('id');
 
@@ -21,6 +22,27 @@ class InquiryDetailModuleFrontController  extends ModuleFrontController
         if (!$inquiry) {
             Tools::redirect($this->context->link->getModuleLink($this->module->name, 'page'));
         }
+
+        $metaTitle = str_replace(
+            ['%title%', '%shop_name%'],
+            [$inquiry['title'], $this->context->shop->name],
+            Configuration::get('INQUIRY_SEO_META_TITLE')
+        );
+        $metaDescription = str_replace(
+            ['%title%', '%shop_name%'],
+            [$inquiry['title'], $this->context->shop->name],
+            Configuration::get('INQUIRY_SEO_META_DESC')
+        );
+        $this->metaTitle = Tools::substr($metaTitle, 0, 70);
+        $this->metaDescription = Tools::substr($metaDescription, 0, 160);
+
+        $this->context->smarty->assign([
+            'faq_schema_json' => $inquiry['admin_reply'] !== '' && $inquiry['admin_reply'] !== null
+                ? $this->buildFaqSchema($inquiry['title'], $inquiry['admin_reply'])
+                : null,
+        ]);
+
+        parent::initContent();
 
         $inquiry['products'] = $db->executeS(
             'SELECT cp.id_product, pl.name, l.id_image, l.legend
@@ -52,11 +74,54 @@ class InquiryDetailModuleFrontController  extends ModuleFrontController
             }
         }
 
+        $inquiry['masked_email'] = $this->maskEmail($inquiry['email']);
+
         $this->context->smarty->assign([
             'inquiry' => $inquiry,
             'back_url' => $this->context->link->getModuleLink($this->module->name, 'page'),
+            'meta_title' => $this->metaTitle,
+            'meta_description' => $this->metaDescription,
         ]);
 
         $this->setTemplate('module:inquiry/views/templates/front/inquiry.tpl');
+    }
+
+    public function getTemplateVarPage()
+    {
+        $page = parent::getTemplateVarPage();
+        $page['meta']['title'] = $this->metaTitle;
+        $page['meta']['description'] = $this->metaDescription;
+
+        return $page;
+    }
+
+    private function maskEmail($email)
+    {
+        $parts = explode('@', $email, 2);
+        if (count($parts) !== 2) {
+            return $email;
+        }
+
+        return Tools::substr($parts[0], 0, 1) . '***@' . $parts[1];
+    }
+
+    private function buildFaqSchema($title, $adminReply)
+    {
+        $schema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'FAQPage',
+            'mainEntity' => [
+                [
+                    '@type' => 'Question',
+                    'name' => $title,
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text' => strip_tags($adminReply),
+                    ],
+                ],
+            ],
+        ];
+
+        return json_encode($schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_PRETTY_PRINT);
     }
 }

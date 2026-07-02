@@ -14,7 +14,6 @@ class InquiryBox extends ObjectModel
     public $date_add;
     public $date_upd;
     public $id_employee;
-    public $id_category;
 
     public static $definition = [
         'table' => 'inquiry',
@@ -26,7 +25,6 @@ class InquiryBox extends ObjectModel
             'approved' => ['type' => self::TYPE_BOOL, 'validate' => 'isBool'],
             'admin_reply' => ['type' => self::TYPE_HTML, 'validate' => 'isCleanHtml'],
             'id_employee' => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedInt'],
-            'id_category' => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedInt'],
             'date_add' => ['type' => self::TYPE_DATE, 'validate' => 'isDate'],
             'date_upd' => ['type' => self::TYPE_DATE, 'validate' => 'isDate'],
         ],

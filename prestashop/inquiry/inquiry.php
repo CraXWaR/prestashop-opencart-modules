@@ -27,7 +27,11 @@ class Inquiry extends Module
             && $this->registerHook('actionFrontControllerSetMedia')
             && Configuration::updateValue('INQUIRY_AUTO_APPROVE', 0)
             && $this->registerHook('moduleRoutes')
-            && $this->registerHook('displayFooter');
+            && $this->registerHook('displayFooter')
+            && $this->registerHook('displayNav')
+            && $this->registerHook('displayHeader')
+            && Configuration::updateValue('INQUIRY_SEO_META_TITLE', '%title% - %shop_name%')
+            && Configuration::updateValue('INQUIRY_SEO_META_DESC', '%title%');
     }
 
     public function uninstall()
@@ -35,7 +39,11 @@ class Inquiry extends Module
         return parent::uninstall()
             && $this->uninstallDb()
             && $this->uninstallTab()
-            && Configuration::deleteByName('INQUIRY_AUTO_APPROVE');
+            && Configuration::deleteByName('INQUIRY_AUTO_APPROVE')
+            && Configuration::deleteByName('INQUIRY_SEO_META_TITLE')
+            && Configuration::deleteByName('INQUIRY_SEO_META_DESC')
+            && Configuration::deleteByName('INQUIRY_RECAPTCHA_SITE_KEY')
+            && Configuration::deleteByName('INQUIRY_RECAPTCHA_SECRET_KEY');
     }
 
     private function installDb()
@@ -89,19 +97,14 @@ class Inquiry extends Module
         return true;
     }
 
-    public function hookActionAdminControllerSetMedia()
+    public function hookDisplayHeader($params)
     {
-        $this->context->controller->registerStylesheet(
-            'select2-css',
-            'modules/' . $this->name . '/views/css/select2.min.css',
-            ['media' => 'all', 'priority' => 150]
-        );
+        $faqSchema = $this->context->smarty->getTemplateVars('faq_schema_json');
+        if (!$faqSchema) {
+            return '';
+        }
 
-        $this->context->controller->registerJavascript(
-            'select2-js',
-            'modules/' . $this->name . '/views/js/select2.min.js',
-            ['position' => 'bottom', 'priority' => 150]
-        );
+        return '<script type="application/ld+json">' . $faqSchema . '</script>';
     }
 
     public function hookActionFrontControllerSetMedia()
@@ -162,12 +165,24 @@ class Inquiry extends Module
         return $this->display(__FILE__, 'views/templates/hook/footer.tpl');
     }
 
+    public function hookDisplayNav($params)
+    {
+        $this->context->smarty->assign([
+            'inquiry_url' => $this->context->link->getModuleLink('inquiry', 'page'),
+        ]);
+        return $this->display(__FILE__, 'views/templates/hook/nav.tpl');
+    }
+
     public function getContent()
     {
         $output = '';
 
         if (Tools::isSubmit('submit_settings')) {
             Configuration::updateValue('INQUIRY_AUTO_APPROVE', (int) Tools::getValue('INQUIRY_AUTO_APPROVE'));
+            Configuration::updateValue('INQUIRY_SEO_META_TITLE', Tools::substr(trim(Tools::getValue('seo_meta_title')), 0, 255));
+            Configuration::updateValue('INQUIRY_SEO_META_DESC', Tools::substr(trim(Tools::getValue('seo_meta_desc')), 0, 255));
+            Configuration::updateValue('INQUIRY_RECAPTCHA_SITE_KEY', trim(Tools::getValue('recaptcha_site_key')));
+            Configuration::updateValue('INQUIRY_RECAPTCHA_SECRET_KEY', trim(Tools::getValue('recaptcha_secret_key')));
             $output .= $this->displayConfirmation($this->l('Настройките са запазени.'));
         }
 
@@ -185,8 +200,7 @@ class Inquiry extends Module
             $idInquiry = (int) Tools::getValue('id_inquiry');
 
             $fields = [
-                'admin_reply' => pSQL(Tools::getValue('admin_reply')),
-                'id_category' => (int) Tools::getValue('id_category') ?: null,
+                'admin_reply' => pSQL(Tools::purifyHTML(Tools::getValue('admin_reply'))),
             ];
 
             // Stamp the replying employee only when a reply was actually written
@@ -195,42 +209,32 @@ class Inquiry extends Module
             }
             Db::getInstance()->update('inquiry', $fields, 'id_inquiry = ' . $idInquiry);
 
-            // Link a product too, if an ID was entered alongside the save
-            $idProduct = (int) Tools::getValue('id_product');
-            if ($idInquiry && $idProduct) {
-                Db::getInstance()->insert('inquiry_product', [
-                    'id_inquiry' => $idInquiry,
-                    'id_product' => $idProduct,
-                ], false, true, Db::INSERT_IGNORE);
+            Db::getInstance()->delete('inquiry_product', 'id_inquiry = ' . $idInquiry);
+            foreach ((array) Tools::getValue('id_product', []) as $idProduct) {
+                $idProduct = (int) $idProduct;
+                if ($idInquiry && $idProduct) {
+                    Db::getInstance()->insert('inquiry_product', [
+                        'id_inquiry' => $idInquiry,
+                        'id_product' => $idProduct,
+                    ]);
+                }
+            }
+
+            Db::getInstance()->delete('inquiry_category', 'id_inquiry = ' . $idInquiry);
+            foreach ((array) Tools::getValue('id_category', []) as $idCategory) {
+                $idCategory = (int) $idCategory;
+                if ($idInquiry && $idCategory) {
+                    Db::getInstance()->insert('inquiry_category', [
+                        'id_inquiry' => $idInquiry,
+                        'id_category' => $idCategory,
+                    ]);
+                }
             }
 
             $output .= $this->displayConfirmation($this->l('Промените са запазени.'));
         }
 
-        if (Tools::isSubmit('remove_product')) {
-            $idInquiry = (int) Tools::getValue('id_inquiry');
-            $idProduct = (int) Tools::getValue('id_product');
-            Db::getInstance()->delete(
-                'inquiry_product',
-                'id_inquiry = ' . $idInquiry . ' AND id_product = ' . $idProduct
-            );
-            $output .= $this->displayConfirmation($this->l('Product removed.'));
-        }
-
         $pageUrl = $this->context->link->getModuleLink($this->name, 'page');
-
-        $categories = Db::getInstance()->executeS(
-            'SELECT c.id_category, cl.name
-            FROM `' . _DB_PREFIX_ . 'category` c
-            ' . Shop::addSqlAssociation('category', 'c') . '
-            INNER JOIN `' . _DB_PREFIX_ . 'category_lang` cl
-                ON (c.id_category = cl.id_category
-                    AND cl.id_lang = ' . (int) $this->context->language->id . '
-                    AND cl.id_shop = ' . (int) $this->context->shop->id . ')
-            WHERE c.active = 1
-            AND c.id_category != 1
-            ORDER BY cl.name ASC'
-        );
 
         $inquiries = Db::getInstance()->executeS('SELECT * FROM `' . _DB_PREFIX_ . 'inquiry` ORDER BY `date_add` DESC');
 
@@ -247,27 +251,15 @@ class Inquiry extends Module
                     INNER JOIN `' . _DB_PREFIX_ . 'product` p ON cp.id_product = p.id_product
                     WHERE cp.id_inquiry = ' . (int) $inquiry['id_inquiry']
             );
+
+            $inquiry['categories'] = Db::getInstance()->executeS(
+                'SELECT ic.id_category, cl.name
+                    FROM `' . _DB_PREFIX_ . 'inquiry_category` ic
+                    INNER JOIN `' . _DB_PREFIX_ . 'category_lang` cl ON (ic.id_category = cl.id_category AND cl.id_lang = ' . (int) $this->context->language->id . ' AND cl.id_shop = ' . (int) $this->context->shop->id . ')
+                    WHERE ic.id_inquiry = ' . (int) $inquiry['id_inquiry']
+            );
         }
         unset($inquiry);
-
-        // All products in the shop — fed to the select2 product picker (sent once as JSON)
-        $allProducts = Db::getInstance()->executeS(
-            'SELECT p.id_product, pl.name
-            FROM `' . _DB_PREFIX_ . 'product` p
-            INNER JOIN `' . _DB_PREFIX_ . 'product_lang` pl
-                ON (p.id_product = pl.id_product
-                    AND pl.id_lang = ' . (int) $this->context->language->id . '
-                    AND pl.id_shop = ' . (int) $this->context->shop->id . ')
-            ORDER BY pl.name ASC'
-        );
-
-        $productOptions = [];
-        foreach ($allProducts as $p) {
-            $productOptions[] = [
-                'id' => (int) $p['id_product'],
-                'text' => $p['name'] . ' (#' . (int) $p['id_product'] . ')',
-            ];
-        }
 
         $employees = Db::getInstance()->executeS(
             'SELECT id_employee, firstname, lastname FROM `' . _DB_PREFIX_ . 'employee`'
@@ -278,13 +270,17 @@ class Inquiry extends Module
         }
 
         $this->context->smarty->assign([
-            'categories' => $categories,
             'inquiries' => $inquiries,
             'auto_approve' => Configuration::get('INQUIRY_AUTO_APPROVE'),
             'action_url' => AdminController::$currentIndex . '&configure=' . $this->name . '&token=' . Tools::getAdminTokenLite('AdminModules'),
             'page_url' => $pageUrl,
-            'products_json' => json_encode($productOptions, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE),
             'employee_map' => $employeeMap,
+            'ajax_search_products_url' => $this->context->link->getAdminLink('AdminInquiry') . '&ajax=1&action=SearchProducts',
+            'ajax_search_categories_url' => $this->context->link->getAdminLink('AdminInquiry') . '&ajax=1&action=SearchCategories',
+            'seo_meta_title' => Configuration::get('INQUIRY_SEO_META_TITLE'),
+            'seo_meta_desc' => Configuration::get('INQUIRY_SEO_META_DESC'),
+            'recaptcha_site_key' => Configuration::get('INQUIRY_RECAPTCHA_SITE_KEY'),
+            'recaptcha_secret_key' => Configuration::get('INQUIRY_RECAPTCHA_SECRET_KEY'),
         ]);
 
         $output .= $this->display(__FILE__, 'views/templates/admin/configure.tpl');

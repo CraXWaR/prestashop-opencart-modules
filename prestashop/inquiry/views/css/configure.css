@@ -389,6 +389,7 @@
     outline: none;
     transition: border-color 0.15s, box-shadow 0.15s;
 }
+.inq-input-full { width: 100%; max-width: 480px; }
 .inq-select:focus,
 .inq-input:focus {
     border-color: var(--inq-pen);

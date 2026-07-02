@@ -18,8 +18,11 @@
         </a>
 
         <article class="inq-inquiry inq-inquiry-single">
-            <h1 class="inq-inquiry-title">{$inquiry.title|escape:'html':'UTF-8'}</h1>
-            <p class="inq-inquiry-meta">{$inquiry.date_add}</p>
+            <h2 class="inq-inquiry-title">{$inquiry.title|escape:'html':'UTF-8'}</h2>
+            <p class="inq-inquiry-meta">
+                {l s='от' mod='inquiry'} <span class="inq-inquiry-author">{$inquiry.masked_email|escape:'html':'UTF-8'}</span>
+                {l s='на' mod='inquiry'} {$inquiry.date_add}
+            </p>
             <div class="inq-inquiry-body">{$inquiry.content|escape:'html':'UTF-8'|nl2br nofilter}</div>
 
             {if $inquiry.admin_reply}

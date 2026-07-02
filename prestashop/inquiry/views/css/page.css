@@ -151,6 +151,57 @@ body.inq-modal-open { overflow: hidden; }
     color: var(--inq-ink);
 }
 
+.inq-honeypot {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.inq-hours {
+    text-align: center;
+    background: var(--inq-wash);
+    border: 1px solid var(--inq-wash-line);
+    border-radius: 9px;
+    padding: 10px 14px;
+    margin-bottom: 1.1rem;
+}
+.inq-hours-title {
+    font-family: var(--inq-sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--inq-pen);
+    margin: 0 0 3px;
+}
+.inq-hours-text {
+    font-family: var(--inq-sans);
+    font-size: 13px;
+    color: var(--inq-body);
+    margin: 0;
+}
+
+.inq-field-checkbox { margin-bottom: 0.75rem; }
+.inq-checkbox-label {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 8px;
+    font-family: var(--inq-sans);
+    font-size: 13px;
+    color: var(--inq-body);
+    cursor: pointer;
+}
+.inq-checkbox-label input[type="checkbox"] {
+    flex-shrink: 0;
+    width: unset !important;
+}
+.inq-checkbox-label a {
+    color: var(--inq-pen);
+    text-decoration: underline;
+}
+
 .inq-field { margin-bottom: 1rem; }
 .inq-field label {
     display: block;
@@ -406,6 +457,10 @@ body.inq-modal-open { overflow: hidden; }
     letter-spacing: 0.02em;
     color: var(--inq-muted);
     margin: 0 0 13px;
+}
+.inq-inquiry-author {
+    font-weight: 700;
+    color: var(--inq-ink);
 }
 .inq-inquiry-body {
     font-family: var(--inq-serif);

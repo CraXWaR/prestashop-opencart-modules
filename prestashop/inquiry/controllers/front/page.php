@@ -91,7 +91,7 @@ class InquiryPageModuleFrontController extends ModuleFrontController
 
     /** @var string current search query */
     private $searchQuery = '';
-    private $currentCategory = 0;
+    private $currentCategories = [];
 
     public function initContent()
     {
@@ -100,16 +100,23 @@ class InquiryPageModuleFrontController extends ModuleFrontController
         $db = Db::getInstance();
 
         $this->searchQuery = trim(Tools::getValue('q', ''));
-        $this->currentCategory = (int) Tools::getValue('category', 0);
+        $categoryParam = trim((string) Tools::getValue('category', ''));
+        $this->currentCategories = $categoryParam === ''
+            ? []
+            : array_values(array_unique(array_filter(array_map('intval', explode(',', $categoryParam)))));
 
         $where = 'approved = 1' . $this->buildSearchWhere($this->searchQuery);
 
-        if ($this->currentCategory > 0) {
-            $where .= ' AND id_category = ' . $this->currentCategory;
+        if ($this->currentCategories) {
+            $where .= ' AND EXISTS (
+                SELECT 1 FROM `' . _DB_PREFIX_ . 'inquiry_category` ic
+                WHERE ic.id_inquiry = i.id_inquiry
+                AND ic.id_category IN (' . implode(',', $this->currentCategories) . ')
+            )';
         }
 
         $total = (int) $db->getValue(
-            'SELECT COUNT(*) FROM `' . _DB_PREFIX_ . 'inquiry` WHERE ' . $where
+            'SELECT COUNT(*) FROM `' . _DB_PREFIX_ . 'inquiry` i WHERE ' . $where
         );
 
         $perPage = self::INQUIRIES_PER_PAGE;
@@ -126,8 +133,8 @@ class InquiryPageModuleFrontController extends ModuleFrontController
         $offset = ($page - 1) * $perPage;
 
         $inquiries = $db->executeS(
-            'SELECT *
-            FROM `' . _DB_PREFIX_ . 'inquiry`
+            'SELECT i.*
+            FROM `' . _DB_PREFIX_ . 'inquiry` i
             WHERE ' . $where . '
             ORDER BY date_add DESC
             LIMIT ' . (int) $offset . ', ' . (int) $perPage
@@ -142,40 +149,32 @@ class InquiryPageModuleFrontController extends ModuleFrontController
         unset($hidden['q'], $hidden['p']);
 
         $rawCategories = $db->executeS(
-            'SELECT c.id_category, cl.name
-            FROM `' . _DB_PREFIX_ . 'category` c
+            'SELECT DISTINCT c.id_category, cl.name
+            FROM `' . _DB_PREFIX_ . 'inquiry_category` ic
+            INNER JOIN `' . _DB_PREFIX_ . 'inquiry` iq ON (iq.id_inquiry = ic.id_inquiry AND iq.approved = 1)
+            INNER JOIN `' . _DB_PREFIX_ . 'category` c ON (c.id_category = ic.id_category AND c.active = 1)
             ' . Shop::addSqlAssociation('category', 'c') . '
             INNER JOIN `' . _DB_PREFIX_ . 'category_lang` cl
                 ON (c.id_category = cl.id_category
                     AND cl.id_lang = ' . (int) $this->context->language->id . '
                     AND cl.id_shop = ' . (int) $this->context->shop->id . ')
-            WHERE c.active = 1
-            AND c.id_category != 1
             ORDER BY cl.name ASC'
         );
 
         $categories = [];
         foreach ($rawCategories as $cat) {
-            $categories[] = [
-                'id_category' => (int) $cat['id_category'],
-                'name' => $cat['name'],
-                'url' => $this->context->link->getModuleLink(
-                    $this->module->name,
-                    'page',
-                    ['category' => (int) $cat['id_category']]
-                ),
-                'active' => $this->currentCategory === (int) $cat['id_category'],
-            ];
-        }
+            $idCat = (int) $cat['id_category'];
+            $isActive = in_array($idCat, $this->currentCategories, true);
+            $toggledSelection = $isActive
+                ? array_diff($this->currentCategories, [$idCat])
+                : array_merge($this->currentCategories, [$idCat]);
 
-        if ($this->currentCategory > 0) {
-            foreach ($categories as $i => $cat) {
-                if ($cat['active']) {
-                    unset($categories[$i]);
-                    array_unshift($categories, $cat);
-                    break;
-                }
-            }
+            $categories[] = [
+                'id_category' => $idCat,
+                'name' => $cat['name'],
+                'url' => $this->buildCategoryToggleUrl(array_values($toggledSelection)),
+                'active' => $isActive,
+            ];
         }
 
         $employees = $db->executeS(
@@ -225,6 +224,9 @@ class InquiryPageModuleFrontController extends ModuleFrontController
         $this->context->smarty->assign([
             'inquiries' => $inquiries,
             'submit_url' => $this->context->link->getModuleLink($this->module->name, 'submit'),
+            'terms_url' => $this->context->link->getCMSLink(3),
+            'privacy_url' => $this->context->link->getCMSLink(2),
+            'recaptcha_site_key' => Configuration::get('INQUIRY_RECAPTCHA_SITE_KEY'),
             'search_query' => $this->searchQuery,
             'search_action' => $action,
             'search_hidden' => $hidden,
@@ -237,7 +239,7 @@ class InquiryPageModuleFrontController extends ModuleFrontController
                 'next_url' => $page < $totalPages ? $this->buildPageLink($page + 1) : null,
                 'pages' => $this->buildPages($page, $totalPages),
             ],
-            'current_category' => $this->currentCategory,
+            'current_categories' => $this->currentCategories,
             'categories' => $categories,
         ]);
 
@@ -281,8 +283,22 @@ class InquiryPageModuleFrontController extends ModuleFrontController
             $params['q'] = $this->searchQuery;
         }
 
-        if ($this->currentCategory > 0) {
-            $params['category'] = $this->currentCategory;
+        if ($this->currentCategories) {
+            $params['category'] = implode(',', $this->currentCategories);
+        }
+
+        return $this->context->link->getModuleLink($this->module->name, 'page', $params);
+    }
+
+    private function buildCategoryToggleUrl($categoryIds)
+    {
+        $params = [];
+        if ($this->searchQuery !== '') {
+            $params['q'] = $this->searchQuery;
+        }
+
+        if ($categoryIds) {
+            $params['category'] = implode(',', $categoryIds);
         }
 
         return $this->context->link->getModuleLink($this->module->name, 'page', $params);

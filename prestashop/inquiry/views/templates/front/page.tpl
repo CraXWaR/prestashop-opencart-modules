@@ -9,6 +9,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap">
 
+    {if $recaptcha_site_key}
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    {/if}
+
     <div class="inquiry">
 
         {if isset($smarty.get.submitted) && $smarty.get.submitted}
@@ -39,7 +43,14 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
                 <p id="inq-modal-title" class="inq-form-title">{l s='Изпратете запитване' mod='inquiry'}</p>
+
+                <div class="inq-hours">
+                    <p class="inq-hours-title">{l s='Работно време' mod='inquiry'}</p>
+                    <p class="inq-hours-text">{l s='ПОНЕДЕЛНИК - ПЕТЪК | 09:00 - 17:00' mod='inquiry'}</p>
+                </div>
+
                 <form method="post" action="{$submit_url}">
+                    <input type="text" name="website" class="inq-honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
                     <div class="inq-field">
                         <label for="inquiry-email">{l s='Имейл' mod='inquiry'}</label>
                         <input type="email" id="inquiry-email" name="email" placeholder="you@example.com" required>
@@ -52,6 +63,23 @@
                         <label for="inquiry-content">{l s='Запитване' mod='inquiry'}</label>
                         <textarea id="inquiry-content" name="content" rows="4" placeholder="{l s='Какво мислите?' mod='inquiry'}" required></textarea>
                     </div>
+                    <div class="inq-field inq-field-checkbox">
+                        <label class="inq-checkbox-label">
+                            <input type="checkbox" name="terms_accepted" required>
+                            <span>{l s='Съгласен съм с' mod='inquiry'} <a href="{$terms_url}" target="_blank" rel="noopener">{l s='Общите условия' mod='inquiry'}</a></span>
+                        </label>
+                    </div>
+                    <div class="inq-field inq-field-checkbox">
+                        <label class="inq-checkbox-label">
+                            <input type="checkbox" name="privacy_accepted" required>
+                            <span>{l s='Съгласен съм с' mod='inquiry'} <a href="{$privacy_url}" target="_blank" rel="noopener">{l s='Условието за поверителност' mod='inquiry'}</a></span>
+                        </label>
+                    </div>
+                    {if $recaptcha_site_key}
+                        <div class="inq-field">
+                            <div class="g-recaptcha" data-sitekey="{$recaptcha_site_key|escape:'html':'UTF-8'}"></div>
+                        </div>
+                    {/if}
                     <button type="submit" name="submit_inquiry" class="inq-submit">
                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                         {l s='Изпрати' mod='inquiry'}
@@ -83,7 +111,7 @@
                 <button type="button" id="inq-cat-prev" class="inq-cat-arrow inq-cat-arrow-hidden" aria-label="{l s='Предишни категории' mod='inquiry'}">‹</button>
                 <div class="inq-cat-track-wrap">
                     <div id="inq-cat-track" class="inq-cat-track">
-                        <a href="{$search_action}" class="inq-cat-pill{if $current_category == 0} inq-cat-pill-active{/if}">
+                        <a href="{$search_action}" class="inq-cat-pill{if $current_categories|@count == 0} inq-cat-pill-active{/if}">
                             {l s='Всички' mod='inquiry'}
                         </a>
                         {foreach $categories as $cat}
